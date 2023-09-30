@@ -17,6 +17,10 @@ text-align: center;
   transition: opacity .3s ease-in-out,color .3s ease-in-out,background-color .3s ease-in-out,fill .3s ease-in-out!important;
 }
 
+.multiText {
+  color: rgb(35, 179, 66);
+}
+
 .mineImg {
   width: 60px;
 }
@@ -43,6 +47,9 @@ text-align: center;
   border: 1px solid #ccc;
   transition: 0.2s;
   text-align: center;
+}
+.disabledMine {
+  background-color: rgb(122, 117, 117);
 }
 
 .mineGame {

@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useState } from 'react';
+import React, { useRef,useState,useEffect } from 'react';
 import diamondSound from "./assets/diamondSound.wav";
 import bombSound from "./assets/bombSound.wav";
 
@@ -10,12 +10,14 @@ function App() {
   const [hiddenCount, setHiddenCount] = useState(16);
   const [balance, setBalance] = useState(100);
   const [bet, setBet] = useState(0);
+  const inputRef = useRef(null);
   const [profit, setProfit] = useState(0);
   const [returnMoney, setReturnMoney] = useState(bet);
+  const [multiplier, setMultiplier] = useState(1.0);
   const [isBetDisabled, setBetDisabled] = useState(false);
   const [isInputDisabled, setInputDisabled] = useState(false);
   const [isCashoutDisabled, setCashoutDisabled] = useState(true);
-
+  const [lostGame, setLoseGame] = useState(false);
   const diamondAudio = new Audio(diamondSound);
   diamondAudio.volume = 0.7;
   const bombAudio = new Audio(bombSound);
@@ -25,6 +27,9 @@ function App() {
   const [mineButtonsDisabled, setMineButtonsDisabled] = useState(Array(16).fill(false));
 
   function mineLogic(e, index) {
+    if (mineButtonsDisabled[index]) {
+      return;
+    }
     if (!isBetDisabled)
       handleBet();
 
@@ -35,17 +40,18 @@ function App() {
     let newMineImages = [...mineImages];
     let randomNumber = Math.floor(Math.random() * hiddenCount);
 
-    if (randomNumber >= mineCount) {
+    if (randomNumber >= mineCount) { //Diamond hit
       setHiddenCount(prevCount => prevCount - 1);
       newMineImages[index] = "https://images.vexels.com/media/users/3/157265/isolated/preview/d546c542730b45e5893fc0ed71c8f4d7-blue-diamond-stone-vector.png";
-      setReturnMoney(prevMoney => prevMoney * (1 + mineCount/hiddenCount));
-      setProfit(prevProfit => returnMoney - bet);
+      setMultiplier(multiplier * (1 + mineCount/hiddenCount));
+      setReturnMoney(returnMoney * (1 + mineCount/hiddenCount));
       diamondAudio.play(); 
-    } else {
+    } else { //Bomb hit
       newMineImages[index] = "https://creazilla-store.fra1.digitaloceanspaces.com/cliparts/60401/bomb-clipart-xl.png";
+      setMultiplier(0.0);
       setReturnMoney(0);
-      setProfit(-bet);
       bombAudio.play();
+      setLoseGame(true);
     }
 
     setMineImages(newMineImages);
@@ -53,6 +59,19 @@ function App() {
     newButtonsState[index] = true;
     setMineButtonsDisabled(newButtonsState);
   }
+
+  //
+  useEffect(() => {
+    if (lostGame) {
+      setMineButtonsDisabled(Array(16).fill(true));
+      //grey out all mine squares
+      let mines = document.getElementsByClassName('mine');
+      for(let i = 0; i < mines.length; i++) {
+        //add mine to disabled class
+        mines[i].classList.add('disabledMine');
+      }
+    }
+  }, [lostGame]);
 
   function handleBetInput(e) {
     let betValue = parseFloat(e.target.value);
@@ -70,25 +89,40 @@ function App() {
 
   function handleBet() {
     if (hiddenCount === 16) {
-      setBalance(prevBalance => prevBalance - bet);
+      setBalance(balance - bet);
       setBetDisabled(true);
       setInputDisabled(true);
     }
   }
 
-  function resetGame() {
+  function resetGameBoard() {
     setMineButtonsDisabled(Array(16).fill(false));
     setMineImages(Array(16).fill(''));
+    //remove gray out from all locked mine squares
+    let mines = document.getElementsByClassName('mine');
+    for(let i = 0; i < mines.length; i++) {
+      //add mine to disabled class
+      mines[i].classList.remove('disabledMine');
+    }
   }
 
+  useEffect(() => {
+    setProfit(returnMoney - bet);
+  }, [returnMoney, bet]);
+
   function handleCashout() {
-    setBalance(prev => prev + returnMoney);
+    setBalance(balance + returnMoney);
     setBet(0);
+    inputRef.current.value = '';
     setProfit(0);
     setHiddenCount(16);
     setBetDisabled(false);
     setInputDisabled(false);
-    resetGame();
+    setCashoutDisabled(true);
+    resetGameBoard();
+    setLoseGame(false)
+    setReturnMoney(0);
+    setMultiplier(1.0);
   }
     // Generate a 4x4 grid of div elements
     const mines = Array.from({ length: 16 }).map((_, index) => (
@@ -111,6 +145,7 @@ function App() {
             <span className="currency-code">$</span>
             <input className="betIn"
                    name="bet-amount"
+                   ref={inputRef}
                    onInput={handleBetInput}
                    type="number"
                    defaultValue={0}
@@ -132,7 +167,8 @@ function App() {
         <div className="betInfo">
           Balance: ${balance.toFixed(2)} <br/>
           Bet: ${bet.toFixed(2)}<br/>
-          Profit: ${profit.toFixed(2)}
+          Profit: ${profit.toFixed(2)}<br/>
+          <span className='multiText'>Multiplier: {multiplier.toFixed(2)}x</span>
         </div>
         <button className="btn btn-success cashoutBtn"
                 onClick={handleCashout}
