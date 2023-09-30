@@ -1,23 +1,27 @@
-import logo from './logo.svg';
 import './App.css';
 
 function App() {
+
+  
+
+    // Generate a 4x4 grid of div elements
+    const mines = Array.from({ length: 16 }).map((_, index) => (
+      <div key={index} className="mine">
+        <button className='mineBtn'>M</button>
+      </div>
+    ));
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <button className="btn btn-primary login">Log in</button>
+
+
+      <div className="mineContainer">
+      {mines}
+
+      </div>
+
     </div>
   );
 }
