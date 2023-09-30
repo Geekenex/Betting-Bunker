@@ -1,148 +1,145 @@
 import './App.css';
+import React, { useState } from 'react';
 import diamondSound from "./assets/diamondSound.wav";
 import bombSound from "./assets/bombSound.wav";
 
 function App() {
   //Global variables
-  let hiddenCount = 16;
   let mineCount = 2;
-  let balance = 100;
-  let bet = 0;
-  let profit = 0;
-  let returnMoney = bet;
 
-  // Sounds
+  const [hiddenCount, setHiddenCount] = useState(16);
+  const [balance, setBalance] = useState(100);
+  const [bet, setBet] = useState(0);
+  const [profit, setProfit] = useState(0);
+  const [returnMoney, setReturnMoney] = useState(bet);
+  const [isBetDisabled, setBetDisabled] = useState(false);
+  const [isInputDisabled, setInputDisabled] = useState(false);
+  const [isCashoutDisabled, setCashoutDisabled] = useState(true);
+
   const diamondAudio = new Audio(diamondSound);
   diamondAudio.volume = 0.7;
   const bombAudio = new Audio(bombSound);
   bombAudio.volume = 0.7;
 
-  // Function used to update labels
-  function updateLabels(){
-    document.getElementById("betInfo").innerHTML = "Balance: $" + balance.toFixed(2) + "<br/>Bet: $" + bet + "<br/>Profit: $" + profit.toFixed(2);
-    document.getElementById("cashoutBtn").innerHTML = "Cashout: $" + parseFloat(returnMoney).toFixed(2);
-  }
+  const [mineImages, setMineImages] = useState(Array(16).fill(''));
+  const [mineButtonsDisabled, setMineButtonsDisabled] = useState(Array(16).fill(false));
 
-  function mineLogic(e) {
-    // Handle the bet if the user clicks grid without clicking betBtn
-    if (!document.getElementById("betBtn").disabled)
+  function mineLogic(e, index) {
+    if (!isBetDisabled)
       handleBet();
 
-    document.getElementById("betBtn").disabled = true;
-    document.getElementById("betInput").disabled = true;
-    document.getElementById("cashoutBtn").disabled = false;
-    document.getElementById("cashoutBtn").onclick = handleCashout;
-    let image =  e.target.childNodes[0];
-    image.display = "block";
-    e.target.disabled = true;
+    setBetDisabled(true);
+    setInputDisabled(true);
+    setCashoutDisabled(false);
 
-    // generate random number
+    let newMineImages = [...mineImages];
     let randomNumber = Math.floor(Math.random() * hiddenCount);
-    if (randomNumber >= mineCount){ //Hit a diamond
-      hiddenCount--;
-      image.src = "https://images.vexels.com/media/users/3/157265/isolated/preview/d546c542730b45e5893fc0ed71c8f4d7-blue-diamond-stone-vector.png";
-      image.classList.add("reveal-animation");
-      //adjust bet and round to 2 decimal places
-      returnMoney *= (1 + mineCount/hiddenCount);
-      profit = returnMoney - bet;
-      const diamondAudioInstance = diamondAudio.cloneNode();
-      diamondAudioInstance.play();
-      updateLabels()
+
+    if (randomNumber >= mineCount) {
+      setHiddenCount(prevCount => prevCount - 1);
+      newMineImages[index] = "https://images.vexels.com/media/users/3/157265/isolated/preview/d546c542730b45e5893fc0ed71c8f4d7-blue-diamond-stone-vector.png";
+      setReturnMoney(prevMoney => prevMoney * (1 + mineCount/hiddenCount));
+      setProfit(prevProfit => returnMoney - bet);
+      diamondAudio.play(); 
+    } else {
+      newMineImages[index] = "https://creazilla-store.fra1.digitaloceanspaces.com/cliparts/60401/bomb-clipart-xl.png";
+      setReturnMoney(0);
+      setProfit(-bet);
+      bombAudio.play();
     }
-    else { //Hit a bomb
-      image.src = "https://creazilla-store.fra1.digitaloceanspaces.com/cliparts/60401/bomb-clipart-xl.png";
-      image.classList.add("reveal-animation");
-      returnMoney = 0;
-      profit = returnMoney - bet;
-      const bombAudioInstance = bombAudio.cloneNode();
-      bombAudioInstance.play();
-      updateLabels()
-    }   
+
+    setMineImages(newMineImages);
+    let newButtonsState = [...mineButtonsDisabled];
+    newButtonsState[index] = true;
+    setMineButtonsDisabled(newButtonsState);
   }
-  
-  function handleBetInput(e){
-    let betValue = parseFloat(e.target.value)
-    if (betValue === "" || isNaN(betValue) || betValue > balance || betValue < 0){
-      document.getElementById("cashoutBtn").disabled = true;
-      document.getElementById("betBtn").disabled = true;
-      let mineBtns = document.getElementsByClassName("mineBtn");
-      for (let i = 0; i < mineBtns.length; i++){
-        mineBtns[i].disabled = true;
-      }
-  
-    }
-    else {
-      document.getElementById("betBtn").disabled = false;
-      let mineBtns = document.getElementsByClassName("mineBtn");
-      for (let i = 0; i < mineBtns.length; i++){
-        mineBtns[i].disabled = false;
-      }
-  
-      bet = e.target.value;
-      returnMoney = bet;
+
+  function handleBetInput(e) {
+    let betValue = parseFloat(e.target.value);
+    if (isNaN(betValue) || betValue > balance || betValue < 0) {
+      setCashoutDisabled(true);
+      setBetDisabled(true);
+      setMineButtonsDisabled(Array(16).fill(true));
+    } else {
+      setBetDisabled(false);
+      setMineButtonsDisabled(Array(16).fill(false));
+      setBet(betValue);
+      setReturnMoney(betValue);
     }
   }
 
-  function handleBet(e){
-    if (hiddenCount === 16){
-      balance -= bet;
-      document.getElementById("betBtn").disabled = true;
-      document.getElementById("betInput").disabled = true;
-      updateLabels();
+  function handleBet() {
+    if (hiddenCount === 16) {
+      setBalance(prevBalance => prevBalance - bet);
+      setBetDisabled(true);
+      setInputDisabled(true);
     }
   }
 
-  function resetGame(){
-    let mineBtns = document.getElementsByClassName("mineBtn");
-    for (let i = 0; i < mineBtns.length; i++){
-      mineBtns[i].disabled = false;
-    }
-
-    let mineImgs = document.getElementsByClassName("mineImg");
-    for (let i = 0; i < mineImgs.length; i++){
-      mineImgs[i].src = "";
-    }
-    document.getElementById("betInput").value = 0;
+  function resetGame() {
+    setMineButtonsDisabled(Array(16).fill(false));
+    setMineImages(Array(16).fill(''));
   }
 
-  function handleCashout(e){   
-    balance += parseFloat(returnMoney);
-    bet = 0;
-    profit = 0;
-    returnMoney = bet;
-    hiddenCount = 16;
-    document.getElementById("betBtn").disabled = false;
-    document.getElementById("betInput").disabled = false;
-    updateLabels();
+  function handleCashout() {
+    setBalance(prev => prev + returnMoney);
+    setBet(0);
+    setProfit(0);
+    setHiddenCount(16);
+    setBetDisabled(false);
+    setInputDisabled(false);
     resetGame();
   }
     // Generate a 4x4 grid of div elements
     const mines = Array.from({ length: 16 }).map((_, index) => (
       <div key={index} className="mine">
-        <button className='mineBtn' onClick={mineLogic}>
-          <img className="mineImg" display="none" src="" alt=''/>
+        <button className='mineBtn' onClick={(e) => mineLogic(e, index)}>
+          <img className={`mineImg ${mineImages[index] ? 'reveal-animation' : ''}`} src={mineImages[index]} alt=''/>
         </button>
       </div>
     ));
 
 
+  // Render the JSX
   return (
     <div className="App">
       <button className="btn btn-primary login">Log in</button>
       <div className='mineGame'>
         <div className='betMenu'>
-          <label className='betLabel'htmlFor="bet-amount">Bet Amount</label>
-          <div class="currency-wrap">
-	          <span class="currency-code">$</span>
-	          <input className="betIn" id="betInput" name="bet-amount" onInput={handleBetInput} type="number" defaultValue={0} min="0" max ={balance}></input>
+          <label className='betLabel' htmlFor="bet-amount">Bet Amount</label>
+          <div className="currency-wrap">
+            <span className="currency-code">$</span>
+            <input className="betIn"
+                   name="bet-amount"
+                   onInput={handleBetInput}
+                   type="number"
+                   defaultValue={0}
+                   min="0"
+                   max={balance}
+                   disabled={isInputDisabled}
+            />
           </div>
-          <button id='betBtn' className="btn btn-success betBtn" onClick={handleBet}>Bet</button>
+          <button className="btn btn-success betBtn"
+                  onClick={handleBet}
+                  disabled={isBetDisabled}
+          >
+            Bet
+          </button>
         </div>
         <div className="mineContainer">
-        {mines}
+          {mines}
         </div>
-        <div id="betInfo" className="betInfo">Balance: ${balance} <br/>Bet: ${bet}<br/>Profit: $0</div>
-        <button id='cashoutBtn' className="btn btn-success cashoutBtn" onClick={handleCashout} disabled={true}>Cashout: ${returnMoney}</button>
+        <div className="betInfo">
+          Balance: ${balance.toFixed(2)} <br/>
+          Bet: ${bet.toFixed(2)}<br/>
+          Profit: ${profit.toFixed(2)}
+        </div>
+        <button className="btn btn-success cashoutBtn"
+                onClick={handleCashout}
+                disabled={isCashoutDisabled}
+        >
+          Cashout: ${returnMoney.toFixed(2)}
+        </button>
       </div>
     </div>
   );
