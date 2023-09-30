@@ -21,7 +21,22 @@ text-align: center;
   width: 60px;
 }
 
-.mine{
+@keyframes scaleUp {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);}
+}
+
+.reveal-animation {
+  animation: scaleUp 0.5s forwards;
+}
+
+.mine {
   width: 80px;
   height: 80px;
   background-color: #eee; /* just for visualization, you can customize it */
@@ -35,13 +50,45 @@ text-align: center;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin-top: 5%;
+  margin-top: 3%;
 }
 
 .betInfo {
   margin-top: 2%;
 }
 
+.betLabel {
+  margin-right: 10px;
+}
+
+.currency-wrap{
+  position:relative;
+}
+
+.currency-code{
+  position:absolute;
+  left:8px;
+  top:10px;
+}
+
+.betIn {
+  margin-right: 10px;
+  padding:10px 20px;
+  border:solid 1px #ccc;
+  border-radius:5px;
+}
+
+.betMenu {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1%;
+  justify-content: center;
+  align-items: center;
+}
+
+.betBtn {
+  width: 100px;
+}
 .cashoutBtn {
   margin-top: 2%;
 }

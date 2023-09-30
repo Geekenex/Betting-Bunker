@@ -1,4 +1,6 @@
 import './App.css';
+import diamondSound from "./assets/diamondSound.wav";
+import bombSound from "./assets/bombSound.wav";
 
 function App() {
   //Global variables
@@ -8,6 +10,12 @@ function App() {
   let bet = 0;
   let profit = 0;
   let returnMoney = bet;
+
+  // Sounds
+  const diamondAudio = new Audio(diamondSound);
+  diamondAudio.volume = 0.7;
+  const bombAudio = new Audio(bombSound);
+  bombAudio.volume = 0.7;
 
   // Function used to update labels
   function updateLabels(){
@@ -30,18 +38,24 @@ function App() {
 
     // generate random number
     let randomNumber = Math.floor(Math.random() * hiddenCount);
-    if (randomNumber >= mineCount){
+    if (randomNumber >= mineCount){ //Hit a diamond
       hiddenCount--;
       image.src = "https://images.vexels.com/media/users/3/157265/isolated/preview/d546c542730b45e5893fc0ed71c8f4d7-blue-diamond-stone-vector.png";
+      image.classList.add("reveal-animation");
       //adjust bet and round to 2 decimal places
       returnMoney *= (1 + mineCount/hiddenCount);
       profit = returnMoney - bet;
+      const diamondAudioInstance = diamondAudio.cloneNode();
+      diamondAudioInstance.play();
       updateLabels()
     }
-    else {
+    else { //Hit a bomb
       image.src = "https://creazilla-store.fra1.digitaloceanspaces.com/cliparts/60401/bomb-clipart-xl.png";
+      image.classList.add("reveal-animation");
       returnMoney = 0;
       profit = returnMoney - bet;
+      const bombAudioInstance = bombAudio.cloneNode();
+      bombAudioInstance.play();
       updateLabels()
     }   
   }
@@ -117,8 +131,11 @@ function App() {
       <button className="btn btn-primary login">Log in</button>
       <div className='mineGame'>
         <div className='betMenu'>
-          <label htmlFor="bet-amount">Bet Amount</label>
-          <input id="betInput" name="bet-amount" onInput={handleBetInput} type="number" defaultValue={0} min="0" max ={balance}></input>
+          <label className='betLabel'htmlFor="bet-amount">Bet Amount</label>
+          <div class="currency-wrap">
+	          <span class="currency-code">$</span>
+	          <input className="betIn" id="betInput" name="bet-amount" onInput={handleBetInput} type="number" defaultValue={0} min="0" max ={balance}></input>
+          </div>
           <button id='betBtn' className="btn btn-success betBtn" onClick={handleBet}>Bet</button>
         </div>
         <div className="mineContainer">
