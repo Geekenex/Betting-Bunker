@@ -5,9 +5,7 @@
 }
 
 .mineBtn{
-  display: flex;
-  align-items: center;
-  justify-content: center;
+text-align: center;
   padding: 0;
   margin: 0;
   width: 100%;
@@ -19,6 +17,9 @@
   transition: opacity .3s ease-in-out,color .3s ease-in-out,background-color .3s ease-in-out,fill .3s ease-in-out!important;
 }
 
+.mineImg {
+  width: 60px;
+}
 
 .mine{
   width: 80px;
@@ -26,6 +27,23 @@
   background-color: #eee; /* just for visualization, you can customize it */
   border: 1px solid #ccc;
   transition: 0.2s;
+  text-align: center;
+}
+
+.mineGame {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 5%;
+}
+
+.betInfo {
+  margin-top: 2%;
+}
+
+.cashoutBtn {
+  margin-top: 2%;
 }
 
 .mine:hover {
@@ -35,6 +53,7 @@
   display: grid;
   grid-template-columns: repeat(4, 0fr);
   gap: 0px; /* adjust as needed */
+
 }
 .App {
   text-align: center;
