@@ -9,13 +9,14 @@ function App() {
   let profit = 0;
   let returnMoney = bet;
 
-
+  // Function used to update labels
   function updateLabels(){
     document.getElementById("betInfo").innerHTML = "Balance: $" + balance.toFixed(2) + "<br/>Bet: $" + bet + "<br/>Profit: $" + profit.toFixed(2);
     document.getElementById("cashoutBtn").innerHTML = "Cashout: $" + parseFloat(returnMoney).toFixed(2);
   }
 
   function mineLogic(e) {
+    // Handle the bet if the user clicks grid without clicking betBtn
     if (!document.getElementById("betBtn").disabled)
       handleBet();
 
@@ -26,8 +27,10 @@ function App() {
     let image =  e.target.childNodes[0];
     image.display = "block";
     e.target.disabled = true;
+
+    // generate random number
     let randomNumber = Math.floor(Math.random() * hiddenCount);
-    if (randomNumber => mineCount){
+    if (randomNumber >= mineCount){
       hiddenCount--;
       image.src = "https://images.vexels.com/media/users/3/157265/isolated/preview/d546c542730b45e5893fc0ed71c8f4d7-blue-diamond-stone-vector.png";
       //adjust bet and round to 2 decimal places
@@ -45,7 +48,7 @@ function App() {
   
   function handleBetInput(e){
     let betValue = parseFloat(e.target.value)
-    if (betValue == "" || isNaN(betValue) || betValue > balance || betValue < 0){
+    if (betValue === "" || isNaN(betValue) || betValue > balance || betValue < 0){
       document.getElementById("cashoutBtn").disabled = true;
       document.getElementById("betBtn").disabled = true;
       let mineBtns = document.getElementsByClassName("mineBtn");
@@ -67,7 +70,7 @@ function App() {
   }
 
   function handleBet(e){
-    if (hiddenCount == 16){
+    if (hiddenCount === 16){
       balance -= bet;
       document.getElementById("betBtn").disabled = true;
       document.getElementById("betInput").disabled = true;
